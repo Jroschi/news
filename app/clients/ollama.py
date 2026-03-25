@@ -28,6 +28,7 @@ class OllamaClient:
             "prompt": prompt,
             "stream": False,
             "format": QueryRewritePlan.model_json_schema(),
+            "think": False,
         }
         response = await self.http_client.post(f"{self.base_url}/api/generate", json=payload)
         response.raise_for_status()
@@ -46,6 +47,10 @@ class OllamaClient:
             "prompt": prompt,
             "stream": False,
             "format": ArticleSummary.model_json_schema(),
+            "think": False,
+            "options": {
+                "num_ctx": 16384,  # or higher if your model supports it
+            },
         }
         response = await self.http_client.post(f"{self.base_url}/api/generate", json=payload)
         response.raise_for_status()

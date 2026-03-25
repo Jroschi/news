@@ -3,29 +3,20 @@ services:
     build:
       context: .
     ports:
-      - "8000:8000"
+      - "8003:8000"
+    restart: unless-stopped
+    container_name: news-api
     environment:
       NEWS_SEARXNG_URL: http://searxng:8080
-      NEWS_OLLAMA_URL: http://ollama:11434
-      NEWS_OLLAMA_CHAT_MODEL: llama3.1:8b-instruct
+      NEWS_OLLAMA_URL: http://host.docker.internal:11434
+      NEWS_OLLAMA_CHAT_MODEL: qwen3.5:9b
       NEWS_OLLAMA_EMBEDDING_MODEL: mxbai-embed-large
-    depends_on:
-      - ollama
-      - searxng
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - appnet
 
-  searxng:
-    image: searxng/searxng:latest
-    ports:
-      - "8081:8080"
-    environment:
-      SEARXNG_BASE_URL: http://localhost:8081/
+networks:
+  appnet:
+    external: true
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
-volumes:
-  ollama_data:
