@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import asyncio
 from typing import Awaitable, Callable
 
 from app.clients.ollama import OllamaClient
@@ -39,10 +37,17 @@ class NewsPipeline:
             rewrite_plan=rewrite_plan,
             results=search_results,
             embeddings=embeddings,
-            max_results=request.max_results,
+            max_results=len(search_results),
         )
-        article_results = await asyncio.gather(*(self._summarize_result(result) for result in ranked_results))
-        return SummarizeResponse(query=request.query, rewritten_query=rewrite_plan, results=article_results)
+        successful_results = []
+        for candidate in ranked_results:
+            if len(successful_results) == request.max_results:
+                break
+            summary_result = await self._summarize_result(candidate)
+            if summary_result.summary is None or summary_result.error:
+                continue
+            successful_results.append(summary_result)
+        return SummarizeResponse(query=request.query, rewritten_query=rewrite_plan, results=successful_results)
 
     async def _search_all_terms(self, rewrite_plan: QueryRewritePlan):
         collected = []
