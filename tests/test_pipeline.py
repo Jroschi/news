@@ -28,12 +28,31 @@ class FakeSearxNGClient:
                 snippet="Secondary development",
                 source="Example",
             ),
+            SearchResult(
+                title=f"{query} article three",
+                url="https://example.com/article-3",
+                snippet="Additional market response coverage",
+                source="Example",
+                published_date="2026-03-21",
+            ),
+            SearchResult(
+                title=f"{query} article four",
+                url="https://example.com/article-4",
+                snippet="Background context and analysis",
+                source="Example",
+            ),
         ]
 
 
 class FakeOllamaClient:
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        return [[1.0, 0.0], [0.9, 0.1], [0.8, 0.2]]
+        return [
+            [1.0, 0.0],
+            [1.0, 0.0],
+            [0.95, 0.05],
+            [0.9, 0.1],
+            [0.85, 0.15],
+        ]
 
     async def summarize_article(self, article_title: str, article_text: str) -> ArticleSummary:
         return ArticleSummary(
@@ -50,7 +69,7 @@ class FakeOllamaClient:
 
 class FakeFetcher:
     async def fetch(self, result: RankedSearchResult) -> ArticleContent:
-        if result.title.endswith("two"):
+        if result.title.endswith("one"):
             raise RuntimeError("fetch failed")
         return ArticleContent(
             url=result.url,
@@ -81,10 +100,14 @@ async def test_pipeline_keeps_partial_results_when_one_article_fails() -> None:
         fetcher=FakeFetcher(),
     )
 
-    response = await pipeline.run(SummarizeRequest(query="Summarize AI regulation news", max_results=3, language="en"))
+    response = await pipeline.run(SummarizeRequest(query="Summarize AI regulation news", max_results=2, language="en"))
 
     assert response.rewritten_query.topic == "AI regulation"
     assert len(response.results) == 2
-    assert response.results[0].summary is not None
-    assert response.results[1].summary is None
-    assert response.results[1].error == "fetch failed"
+    assert all(item.summary is not None for item in response.results)
+    assert all(item.error is None for item in response.results)
+    assert all(item.url != "https://example.com/article-1" for item in response.results)
+    assert [item.url for item in response.results] == [
+        "https://example.com/article-2",
+        "https://example.com/article-3",
+    ]
