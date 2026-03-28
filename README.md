@@ -1,6 +1,6 @@
 # News summarization backend
 
-FastAPI backend that rewrites an English news query into a structured search plan, queries SearxNG, ranks candidate articles with Ollama embeddings or a heuristic fallback, fetches and cleans article HTML with BeautifulSoup, summarizes each article independently with Ollama, and returns JSON.
+FastAPI backend that rewrites an English news query into a structured search plan, queries SearxNG, ranks candidate articles with Ollama embeddings or a heuristic fallback, fetches and cleans article HTML with BeautifulSoup, summarizes each article independently with Ollama, and returns JSON. Designed primarily for personal use with middleware MCP server
 
 ## Features
 
