@@ -109,7 +109,7 @@ uvicorn app.main:app --reload
 ## Try it with curl
 
 ```bash
-curl -X POST http://localhost:8000/summarize \
+curl -X POST http://localhost:8003/summarize \
   -H "Content-Type: application/json" \
   -d '{
     "query": "What were the biggest AI regulation updates this week?",
